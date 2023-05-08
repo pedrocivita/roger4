@@ -40,11 +40,47 @@ def fatorPotencia(zeq):
 def freqResonancia(l, c):
     return 1/(2*pi*sqrt(l*c))
 
-def CalcularTransformador2(v1, rc, r1, r2, xl1, xl2, xm, xc):
-    Z=np.array([[r1+xl1+xc, -xm],[-xm, xl2+r2+1/(1/rc+1/xc)]])
+def CalcularTransformadorProjeto(v1, rc, r, l, m, c, f):
+    w = 2*pi*f
+
+    xl = w*l*1j
+    xc = 1/(w*c*1j)
+    xm = m*w*1j
+    
+    Z=np.array([[r+xl+xc, -xm],[-xm, xl+r+1/(1/rc+1/xc)]])
     V=np.array([v1,0])
     I=np.dot(linalg.inv(Z),V)
-    return I[0], I[1]
+
+    Zeq = 1/(1/rc+1/xc)
+    V2 = I[1]*Zeq
+
+    return abs(I[0]), abs(I[1]), V2
 
 def capacitorPelaFreqReq(freq, indutancia):
     return 1/(4*pi**2*freq**2*indutancia)
+
+l  = 0.1
+c = 1e-9
+
+freqRes = freqResonancia(l, c)
+print("Frequencia de ressonancia: ", freqRes)
+
+v1 = 10
+
+rc = 500
+r = 1
+
+k = 0.5
+m = k*l
+
+frequencies = np.arange(1000, 50000, 100)
+
+values = {"i1": [], "i2": [], "v2": []}
+
+for f in frequencies:
+    i1, i2, v2 = CalcularTransformadorProjeto(v1, rc, r, l, m, c, f)
+    values["i1"].append(i1)
+    values["i2"].append(i2)
+    values["v2"].append(v2)
+
+    print(values["i1"])
